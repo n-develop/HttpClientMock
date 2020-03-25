@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -15,17 +16,23 @@ namespace HttpClientMock
             _httpClient = httpClient;
         }
 
+        public async Task<IEnumerable<Article>> GetAllArticles()
+        {
+            //https://jsonplaceholder.typicode.com/posts
+            var response = await _httpClient.GetAsync("posts");
+            var responseBody = await response.Content.ReadAsStringAsync();
+
+            var articles = JsonSerializer.Deserialize<IEnumerable<Article>>(responseBody);
+
+            return articles;
+        }
+
         public async Task<CreationResult> CreateArticle(Article article)
         {
             var serializedArticle = JsonSerializer.Serialize(article);
 
-            var request = new HttpRequestMessage
-            {
-                RequestUri = new Uri("https://jsonplaceholder.typicode.com/posts"),
-                Method = HttpMethod.Post,
-                Content = new StringContent(serializedArticle, Encoding.UTF8, "application/json")
-            };
-            var response = await _httpClient.SendAsync(request);
+            var httpContent = new StringContent(serializedArticle, Encoding.UTF8, "application/json");
+            var response = await _httpClient.PostAsync("posts", httpContent);
             if (!response.IsSuccessStatusCode)
             {
                 return new CreationResult
