@@ -18,7 +18,6 @@ namespace HttpClientMock
 
         public async Task<IEnumerable<Article>> GetAllArticles()
         {
-            //https://jsonplaceholder.typicode.com/posts
             var response = await _httpClient.GetAsync("posts");
             var responseBody = await response.Content.ReadAsStringAsync();
 
