@@ -7,7 +7,7 @@ using Xunit;
 
 namespace HttpClientMock.Tests
 {
-    public class BlogClientTests
+    public class CreateArticleTests
     {
         [Fact]
         public async Task GivenSuccessResponseFromServer_WhenArticlePosted_ThenSuccessMessageIsReturned()
@@ -18,7 +18,10 @@ namespace HttpClientMock.Tests
   ""id"": 101
 }";
             var messageHandler = new MockHttpMessageHandler(response, HttpStatusCode.OK);
-            var httpClient = new HttpClient(messageHandler);
+            var httpClient = new HttpClient(messageHandler)
+            {
+                BaseAddress = new Uri("http://not-important.com")
+            };
             var sut = new BlogClient(httpClient);
 
             var result = await sut.CreateArticle(new Article
@@ -38,7 +41,10 @@ namespace HttpClientMock.Tests
         {
             var response = string.Empty;
             var messageHandler = new MockHttpMessageHandler(response, HttpStatusCode.InternalServerError);
-            var httpClient = new HttpClient(messageHandler);
+            var httpClient = new HttpClient(messageHandler)
+            {
+                BaseAddress = new Uri("http://not-important.com")
+            };
             var sut = new BlogClient(httpClient);
 
             var result = await sut.CreateArticle(new Article
