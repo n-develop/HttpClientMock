@@ -23,7 +23,12 @@ namespace HttpClientMock.Tests
             CancellationToken cancellationToken)
         {
             NumberOfCalls++;
-            Input = await request.Content.ReadAsStringAsync();
+            
+            if (request.Content != null)
+            {
+                Input = await request.Content.ReadAsStringAsync();
+            }
+            
             return new HttpResponseMessage
             {
                 StatusCode = _statusCode,
