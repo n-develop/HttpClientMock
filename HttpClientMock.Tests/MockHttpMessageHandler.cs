@@ -16,13 +16,13 @@ namespace HttpClientMock.Tests
         }
 
 
-        private static AsyncLocal<Stack<(HttpStatusCode statusCode, string response)>> nextResponseStack
-            = new AsyncLocal<Stack<(HttpStatusCode statusCode, string response)>>();
+        private static AsyncLocal<Queue<(HttpStatusCode statusCode, string response)>> nextResponseStack
+            = new AsyncLocal<Queue<(HttpStatusCode statusCode, string response)>>();
 
         public static void RegisterResponse(HttpStatusCode statusCode, string response)
         {
-            nextResponseStack.Value ??= new Stack<(HttpStatusCode statusCode, string response)>();
-            nextResponseStack.Value.Push((statusCode, response));
+            nextResponseStack.Value ??= new Queue<(HttpStatusCode statusCode, string response)>();
+            nextResponseStack.Value.Enqueue((statusCode, response));
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
@@ -34,15 +34,13 @@ namespace HttpClientMock.Tests
                 Input = await request.Content.ReadAsStringAsync();
             }
 
-            var r = nextResponseStack.Value.Pop();
+            var r = nextResponseStack.Value.Dequeue();
 
-            var res = new HttpResponseMessage
+            return new HttpResponseMessage
             {
                 StatusCode = r.statusCode,
                 Content = new StringContent(r.response)
             };
-
-            return res;
         }
     }
 }
