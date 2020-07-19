@@ -27,7 +27,8 @@ namespace HttpClientMock.Tests
   ""description"": ""THE DESCRIPTION"",
   ""id"": 3
 }]";
-            var messageHandler = new MockHttpMessageHandler(response, HttpStatusCode.OK);
+            var messageHandler = new MockHttpMessageHandler();
+            MockHttpMessageHandler.RegisterResponse(HttpStatusCode.OK, response);
             var httpClient = new HttpClient(messageHandler)
             {
                 BaseAddress = new Uri("http://not-important.com")
