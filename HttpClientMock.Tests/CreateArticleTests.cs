@@ -17,7 +17,8 @@ namespace HttpClientMock.Tests
   ""description"": ""THE DESCRIPTION"",
   ""id"": 101
 }";
-            var messageHandler = new MockHttpMessageHandler(response, HttpStatusCode.OK);
+            var messageHandler = new MockHttpMessageHandler();
+            MockHttpMessageHandler.RegisterResponse(HttpStatusCode.OK, response);
             var httpClient = new HttpClient(messageHandler)
             {
                 BaseAddress = new Uri("http://not-important.com")
@@ -40,12 +41,15 @@ namespace HttpClientMock.Tests
         public async Task GivenErrorResponseFromServer_WhenArticlePosted_ThenErrorMessageIsReturned()
         {
             var response = string.Empty;
-            var messageHandler = new MockHttpMessageHandler(response, HttpStatusCode.InternalServerError);
+            var messageHandler = new MockHttpMessageHandler();
+
             var httpClient = new HttpClient(messageHandler)
             {
                 BaseAddress = new Uri("http://not-important.com")
             };
             var sut = new BlogClient(httpClient);
+
+            MockHttpMessageHandler.RegisterResponse(HttpStatusCode.InternalServerError, response);
 
             var result = await sut.CreateArticle(new Article
             {
