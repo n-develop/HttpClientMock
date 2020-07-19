@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
@@ -14,12 +15,14 @@ namespace HttpClientMock.Tests
         {
         }
 
-        private static (HttpStatusCode statusCode, string response) nextResponse;
+
+        private static AsyncLocal<Stack<(HttpStatusCode statusCode, string response)>> nextResponseStack
+            = new AsyncLocal<Stack<(HttpStatusCode statusCode, string response)>>();
 
         public static void RegisterResponse(HttpStatusCode statusCode, string response)
         {
-            nextResponse.response = response;
-            nextResponse.statusCode = statusCode;
+            nextResponseStack.Value ??= new Stack<(HttpStatusCode statusCode, string response)>();
+            nextResponseStack.Value.Push((statusCode, response));
         }
 
         protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request,
@@ -31,14 +34,13 @@ namespace HttpClientMock.Tests
                 Input = await request.Content.ReadAsStringAsync();
             }
 
+            var r = nextResponseStack.Value.Pop();
+
             var res = new HttpResponseMessage
             {
-                StatusCode = nextResponse.statusCode,
-                Content = new StringContent(nextResponse.response)
+                StatusCode = r.statusCode,
+                Content = new StringContent(r.response)
             };
-
-            nextResponse.statusCode = default(HttpStatusCode);
-            nextResponse.response = null;
 
             return res;
         }
